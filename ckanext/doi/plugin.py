@@ -52,6 +52,9 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
         NB: This is called after creation of a dataset, before resources have been
         added, so state = draft.
         """
+        if toolkit.config.get("ckanext.doi.disable_doi", False):
+            return
+
         DOIQuery.read_package(pkg_dict['id'], create_if_none=True)
 
     ## IPackageController
@@ -62,6 +65,9 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
         Check status of the dataset to determine if we should publish DOI to datacite
         network.
         """
+        if toolkit.config.get("ckanext.doi.disable_doi", False):
+            return
+
         # Is this active and public? If so we need to make sure we have an active DOI
         if pkg_dict.get('state', 'active') == 'active' and not pkg_dict.get(
             'private', False
@@ -104,6 +110,9 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
         """
         Add the DOI details to the pkg_dict so it can be displayed.
         """
+        if toolkit.config.get("ckanext.doi.disable_doi", False):
+            return
+
         doi = DOIQuery.read_package(pkg_dict['id'])
         if doi:
             pkg_dict['doi'] = doi.identifier
