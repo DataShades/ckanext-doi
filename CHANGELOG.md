@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.1.19 (2025-06-19)
+
+### Docs
+
+- use Datacite Metadata Schema v4.5
+
+## v3.1.18 (2025-02-07)
+
+### Docs
+
+- add config option to disable doi generation
+
 ## v3.1.17 (2024-11-04)
 
 ### Docs

@@ -52,7 +52,10 @@ def build_metadata_dict(pkg_dict):
     _add_required('titles', lambda: [{'title': pkg_dict.get('title')}])
 
     # PUBLISHER
-    _add_required('publisher', lambda: toolkit.config.get('ckanext.doi.publisher'))
+    _add_required('publisher', lambda: {
+            "name": toolkit.config.get('ckanext.doi.publisher')
+        }
+    )
 
     # PUBLICATION YEAR
     _add_required('publicationYear', lambda: package_get_year(pkg_dict))
@@ -73,7 +76,7 @@ def build_metadata_dict(pkg_dict):
         'version': '',
         'rightsList': [],
         'descriptions': [],
-        'geolocations': [],
+        'geoLocations': [],
         'fundingReferences': [],
     }
 
@@ -255,20 +258,20 @@ def build_metadata_dict(pkg_dict):
 
 def build_xml_dict(metadata_dict):
     """
-    Builds a dictionary that can be passed directly to datacite.schema42.tostring() to
+    Builds a dictionary that can be passed directly to datacite.schema45.tostring() to
     generate xml. Previously named metadata_to_xml but renamed as it's not actually
     producing any xml, it's just formatting the metadata so a separate function can then
     generate the xml.
 
     :param metadata_dict: a dict of metadata generated from build_metadata_dict
-    :returns: dict that can be passed directly to datacite.schema42.tostring()
+    :returns: dict that can be passed directly to datacite.schema45.tostring()
     """
 
     # required fields first (DOI will be added later)
     xml_dict = {
         'creators': [],
         'titles': metadata_dict.get('titles', []),
-        'publisher': metadata_dict.get('publisher'),
+        'publisher': metadata_dict.get('publisher', {}),
         'publicationYear': str(metadata_dict.get('publicationYear')),
         'types': {
             'resourceType': metadata_dict.get('resourceType'),
@@ -292,7 +295,7 @@ def build_xml_dict(metadata_dict):
         'version',
         'rightsList',
         'descriptions',
-        'geolocations',
+        'geoLocations',
         'fundingReferences',
     ]
 
