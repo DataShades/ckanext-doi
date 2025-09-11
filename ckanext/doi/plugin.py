@@ -89,13 +89,23 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
                 # metadata gets created before minting
                 client.set_metadata(doi.identifier, xml_dict)
                 client.mint_doi(doi.identifier, package_id)
-                toolkit.h.flash_success('DataCite DOI created')
+
+                try:
+                   toolkit.h.flash_success('DataCite DOI created')
+                except RuntimeError:
+                    # fix out of context issue while running cli commands
+                    pass
             else:
                 same = client.check_for_update(doi.identifier, xml_dict)
                 if not same:
                     # Not the same, so we want to update the metadata
                     client.set_metadata(doi.identifier, xml_dict)
-                    toolkit.h.flash_success('DataCite DOI metadata updated')
+
+                    try:
+                        toolkit.h.flash_success('DataCite DOI metadata updated')
+                    except RuntimeError:
+                        # fix out of context issue while running cli commands
+                        pass
 
         return pkg_dict
 
