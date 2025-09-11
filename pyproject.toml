@@ -1,6 +1,6 @@
 [project]
 name = "ckanext-doi"
-version = "3.1.17"
+version = "4.0.3"
 description = "A CKAN extension for assigning a digital object identifier (DOI) to datasets, using the DataCite DOI service."
 readme = "README.md"
 requires-python = ">=3.6"
@@ -22,7 +22,8 @@ dependencies = [
     "jsonschema==3.0.0",
     "xmltodict==0.12.0",
     "datacite==1.1.2",
-    "ckantools>=0.4.1"
+    "ckantools>=0.4.2",
+    "crossrefapi~=1.6.0"
 ]
 
 [project.optional-dependencies]
@@ -55,10 +56,11 @@ exclude = ["tests", "docs"]
 
 [tool.setuptools.package-data]
 "ckanext.doi.theme" = ["*", "**/*"]
+"ckanext.doi.migration" = ["*", "**/*"]
 
 [tool.commitizen]
 name = "cz_nhm"
-version = "3.1.17"
+version = "4.0.3"
 tag_format = "v$version"
 update_changelog_on_bump = true
 changelog_incremental = true
@@ -67,12 +69,34 @@ version_files = [
     "CITATION.cff:^version"
 ]
 
+[tool.ruff]
+target-version = "py38"
+
 [tool.ruff.format]
 quote-style = "single"
 
-[tool.pylint]
-max-line-length = 88
-disable = ["C0114", "R0903"]
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "D"
+]
+ignore = [
+    "D100",
+    "D104",
+    "D200",
+    "D202",
+    "D203",
+    "D205",
+    "D206",
+    "D212",
+    "D300",
+    "D401",
+    "E111",
+    "E114",
+    "E117"
+]
 
 [tool.docformatter]
 wrap-summaries = 88
