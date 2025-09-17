@@ -91,7 +91,7 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
                 client.mint_doi(doi.identifier, package_id)
 
                 try:
-                   toolkit.h.flash_success('DataCite DOI created')
+                    toolkit.h.flash_success('DataCite DOI created')
                 except RuntimeError:
                     # fix out of context issue while running cli commands
                     pass
