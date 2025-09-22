@@ -1,5 +1,15 @@
 # Changelog
 
+## v4.0.4 (2025-09-22)
+
+### Fix
+
+- Make sure flash message doesnt throw RuntimeError while running cli commands
+
+### Style
+
+- fix formatting
+
 ## v4.0.3 (2025-08-11)
 
 ### Build System(s)
