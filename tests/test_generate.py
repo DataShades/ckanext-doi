@@ -5,7 +5,7 @@
 # Created by the Natural History Museum in London, UK
 
 import pytest
-from datacite import schema42
+from datacite import schema45
 
 from ckanext.doi.lib.metadata import build_metadata_dict, build_xml_dict
 
@@ -21,7 +21,7 @@ def test_extracts_metadata():
     assert 1 == len(metadata_dict['creators'])
     assert 1 == len(metadata_dict['titles'])
     assert constants.PKG_DICT['title'] == metadata_dict['titles'][0]['title']
-    assert metadata_dict['publisher'] == 'Example Publisher'
+    assert metadata_dict['publisher'] == {'name': 'Example Publisher'}
     assert isinstance(metadata_dict['publicationYear'], int)
     assert constants.PKG_DICT['type'] == metadata_dict['resourceType']
 
@@ -44,7 +44,5 @@ def test_handles_bad_data():
 def test_generate_xml():
     xml_dict = build_xml_dict(constants.METADATA_DICT)
     # build_xml_dict does not add a DOI
-    xml_dict['identifiers'] = [
-        {'identifierType': 'DOI', 'identifier': '10.0000/this-would-be-a-doi'}
-    ]
-    assert schema42.validate(xml_dict)
+    xml_dict['doi'] = '10.0000/this-would-be-a-doi'
+    assert schema45.validate(xml_dict)
