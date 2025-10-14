@@ -11,7 +11,7 @@ from datetime import datetime as dt
 
 import xmltodict
 from ckan.plugins import toolkit
-from datacite import DataCiteMDSClient, schema42
+from datacite import DataCiteMDSClient, schema45
 from datacite.errors import DataCiteError, DataCiteNotFoundError
 from crossref.restful import Depositor
 
@@ -143,12 +143,12 @@ class DataciteClient(DOIClient):
         :param xml_dict: the metadata as an xml dict (generated from build_xml_dict)
         :returns:
         """
-        xml_dict['identifiers'] = [{'identifierType': 'DOI', 'identifier': doi}]
+        xml_dict['doi'] = doi
 
         # check that the data is valid, this will raise a JSON schema exception if there are issues
-        schema42.validator.validate(xml_dict)
+        schema45.validator.validate(xml_dict)
 
-        xml_doc = schema42.tostring(xml_dict)
+        xml_doc = schema45.tostring(xml_dict)
         # create the metadata on datacite
         self.client.metadata_post(xml_doc)
 
@@ -177,7 +177,7 @@ class DataciteClient(DOIClient):
         if posted_xml is None or posted_xml.strip() == '':
             return False
         posted_xml_dict = dict(xmltodict.parse(posted_xml).get('resource', {}))
-        new_xml_dict = dict(xmltodict.parse(schema42.tostring(xml_dict))['resource'])
+        new_xml_dict = dict(xmltodict.parse(schema45.tostring(xml_dict))['resource'])
         if 'identifier' in posted_xml_dict:
             del posted_xml_dict['identifier']
         has_dates = 'dates' in posted_xml_dict and 'date' in posted_xml_dict['dates']

@@ -35,7 +35,7 @@ You will need a DataCite/Crossref account to use this extension.
 
 ## DOI Metadata
 
-DataCite currently uses [DataCite Metadata Schema v4.2](https://schema.datacite.org/meta/kernel-4.2/index.html).
+DataCite currently uses [DataCite Metadata Schema v4.5](https://schema.datacite.org/meta/kernel-4.5/index.html).
 Crossref currently uses [Crossref Metadata Schema v5.3.1](https://data.crossref.org/reports/help/schema_doc/5.3.1/index.html).
 
 Dataset package fields and CKAN config settings are mapped to the DataCite Schema with default values, but these can be overwritten by [implementing `IDoi` interface methods](https://ckanext-doi.readthedocs.io/en/latest/usage/#interfaces).
@@ -217,7 +217,7 @@ Extracts metadata from a pkg_dict for use in generating datacite DOIs. The base 
 1. previously called `metadata_to_xml`
 2. parameters rearranged (previously `xml_dict`, `metadata`)
 
-Converts the metadata_dict into an xml_dict that can be passed to the `datacite` library's `schema42.tostring()` and `schema42.validate()` methods. The base method from this extension is run first, then the xml dict is passed through all the implementations of this method.
+Converts the metadata_dict into an xml_dict that can be passed to the `datacite` library's `schema45.tostring()` and `schema45.validate()` methods. The base method from this extension is run first, then the xml dict is passed through all the implementations of this method.
 
 | Parameter       | Description                                                                                            |
 |-----------------|--------------------------------------------------------------------------------------------------------|
