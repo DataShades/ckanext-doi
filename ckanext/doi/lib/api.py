@@ -11,13 +11,12 @@ from datetime import datetime as dt
 
 import xmltodict
 from ckan.plugins import toolkit
+from crossref.restful import Depositor
 from datacite import DataCiteMDSClient, schema45
 from datacite.errors import DataCiteError, DataCiteNotFoundError
-from crossref.restful import Depositor
 
 from ckanext.doi.lib.helpers import doi_test_mode, get_doi_platform
 from ckanext.doi.model.crud import DOIQuery
-
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ DEPRECATED_TEST_PREFIX = '10.5072'
 
 class DOIClient:
     test_url = None
-    client_name = ""
+    client_name = ''
 
     def __init__(self):
         self.username = toolkit.config.get('ckanext.doi.account_name')
@@ -111,7 +110,7 @@ class DOIClient:
 
 class DataciteClient(DOIClient):
     test_url = 'https://mds.test.datacite.org'
-    client_name = "DataCite"
+    client_name = 'DataCite'
 
     def mint_doi(self, doi, package_id):
         """
@@ -182,13 +181,21 @@ class DataciteClient(DOIClient):
             del posted_xml_dict['identifier']
         has_dates = 'dates' in posted_xml_dict and 'date' in posted_xml_dict['dates']
         if has_dates:
+            posted_dates = posted_xml_dict['dates']['date']
+            # xmltodict returns a single dict if there is only one date
+            if not isinstance(posted_dates, list):
+                posted_dates = [posted_dates]
+
+            new_dates = new_xml_dict['dates']['date']
+            # xmltodict returns a single dict if there is only one date
+            if not isinstance(new_dates, list):
+                new_dates = [new_dates]
+
             posted_xml_dict['dates']['date'] = [
-                d
-                for d in posted_xml_dict['dates']['date']
-                if d['@dateType'] != 'Updated'
+                d for d in posted_dates if d.get('@dateType') != 'Updated'
             ]
             new_xml_dict['dates']['date'] = [
-                d for d in new_xml_dict['dates']['date'] if d['@dateType'] != 'Updated'
+                d for d in new_dates if d.get('@dateType') != 'Updated'
             ]
             return posted_xml_dict == new_xml_dict
         else:
@@ -198,7 +205,7 @@ class DataciteClient(DOIClient):
 
 class CrossrefClient(DOIClient):
     test_url = 'https://test.crossref.org'
-    client_name = "Crossref"
+    client_name = 'Crossref'
 
     def set_metadata(self, doi, xml_dict):
         """
@@ -212,7 +219,7 @@ class CrossrefClient(DOIClient):
 
     def make_crossref_request(self, doi, xml_dict):
         error_msg = None
-        elements = doi.split("/")
+        elements = doi.split('/')
 
         if len(elements) == 2:
             ds_doi = elements[1]
@@ -224,17 +231,17 @@ class CrossrefClient(DOIClient):
             )
 
             # Temporary solution until "register_doi" method is fixed by the library.
-            endpoint = depositor.get_endpoint("deposit")
-            files = {"mdFile": ("%s.xml" % ds_doi, xml_dict)}
+            endpoint = depositor.get_endpoint('deposit')
+            files = {'mdFile': ('%s.xml' % ds_doi, xml_dict)}
 
             params = {
-                "operation": "doMDUpload",
-                "login_id": self.username,
-                "login_passwd": self.password,
+                'operation': 'doMDUpload',
+                'login_id': self.username,
+                'login_passwd': self.password,
             }
 
             request = depositor.do_http_request(
-                "post",
+                'post',
                 endpoint,
                 data=params,
                 files=files,
@@ -245,10 +252,12 @@ class CrossrefClient(DOIClient):
             if request.status_code == 200:
                 resp_text = request.text
 
-                if "Not Accessible" in resp_text:
-                    error_msg = 'There is an issue with credentials,' \
+                if 'Not Accessible' in resp_text:
+                    error_msg = (
+                        'There is an issue with credentials,'
                         ' please re-check them and try again.'
-                elif "<title>FAILURE</title>" in resp_text:
+                    )
+                elif '<title>FAILURE</title>' in resp_text:
                     error_msg = 'Response returend with a failure.'
             else:
                 error_msg = (
@@ -274,7 +283,7 @@ class CrossrefClient(DOIClient):
 def get_client():
     platform = get_doi_platform()
     clients = {
-        "datacite": DataciteClient,
-        "crossref": CrossrefClient,
+        'datacite': DataciteClient,
+        'crossref': CrossrefClient,
     }
     return clients[platform]()
