@@ -13,7 +13,7 @@ import xmltodict
 from ckan.plugins import toolkit
 from crossref.restful import Depositor
 from datacite import DataCiteMDSClient, schema45
-from datacite.errors import DataCiteError, DataCiteNotFoundError
+from datacite.errors import DataCiteError, DataCiteNotFoundError, DataCiteServerError
 
 from ckanext.doi.lib.helpers import doi_test_mode, get_doi_platform
 from ckanext.doi.model.crud import DOIQuery
@@ -149,7 +149,10 @@ class DataciteClient(DOIClient):
 
         xml_doc = schema45.tostring(xml_dict)
         # create the metadata on datacite
-        self.client.metadata_post(xml_doc)
+        try:
+            self.client.metadata_post(xml_doc)
+        except DataCiteServerError:
+            log.exception("Cannot set DOI metadata")
 
     def get_metadata(self, doi):
         """
