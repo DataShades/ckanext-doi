@@ -23,6 +23,6 @@ def test_doi_is_created_automatically(mock_client):
     mock_client.return_value = MagicMock(
         metadata_get=MagicMock(side_effect=DataCiteNotFoundError())
     )
-    package = factories.Dataset()
+    package = factories.Dataset(owner_org=factories.Organization()['id'])
     found_record = Session.query(DOI).filter(DOI.package_id == package['id']).one()
     assert found_record is not None

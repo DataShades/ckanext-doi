@@ -152,7 +152,7 @@ class DataciteClient(DOIClient):
         try:
             self.client.metadata_post(xml_doc)
         except DataCiteServerError:
-            log.exception("Cannot set DOI metadata")
+            log.exception('Cannot set DOI metadata')
 
     def get_metadata(self, doi):
         """

@@ -11,13 +11,13 @@ from typing import Any
 from ckan.plugins import SingletonPlugin, implements, interfaces, toolkit
 
 from ckanext.doi import cli
-from ckanext.doi.lib.api import DataciteClient, get_client
+from ckanext.doi.lib.api import get_client
 from ckanext.doi.lib.helpers import (
     doi_test_mode,
+    get_doi_platform,
     get_site_title,
     get_site_url,
     package_get_year,
-    get_doi_platform,
 )
 from ckanext.doi.lib.metadata import build_metadata_dict, build_xml_dict
 from ckanext.doi.model.crud import DOIQuery
@@ -65,9 +65,10 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
         network.
         """
         # Is this active and public? If so we need to make sure we have an active DOI
-        if not toolkit.config.get('ckanext.doi.disable_on_update', False) and pkg_dict.get(
-            'state', 'active') == 'active' and not pkg_dict.get(
-            'private', False
+        if (
+            not toolkit.config.get('ckanext.doi.disable_on_update', False)
+            and pkg_dict.get('state', 'active') == 'active'
+            and not pkg_dict.get('private', False)
         ):
             package_id = pkg_dict['id']
 
@@ -94,7 +95,9 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
                 client.mint_doi(doi.identifier, package_id)
 
                 try:
-                   toolkit.h.flash_success(f'{client.client_name} DataCite DOI created')
+                    toolkit.h.flash_success(
+                        f'{client.client_name} DataCite DOI created'
+                    )
                 except RuntimeError:
                     # fix out of context issue while running cli commands
                     pass
@@ -105,7 +108,9 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
                     client.set_metadata(doi.identifier, xml_dict)
 
                     try:
-                        toolkit.h.flash_success(f'{client.client_name} DOI metadata updated')
+                        toolkit.h.flash_success(
+                            f'{client.client_name} DOI metadata updated'
+                        )
                     except RuntimeError:
                         # fix out of context issue while running cli commands
                         pass

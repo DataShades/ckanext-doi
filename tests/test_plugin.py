@@ -26,7 +26,7 @@ class TestDOIPlugin:
             mock_client_class.return_value = mock_client
 
             # create a new dataset
-            dataset = factories.Dataset()
+            dataset = factories.Dataset(owner_org=factories.Organization()['id'])
 
         # check that a DOI is created in the database for this new dataset
         assert DOIQuery.read_package(dataset['id'], create_if_none=False)
@@ -47,7 +47,11 @@ class TestDOIPlugin:
                 mock_client_class.return_value = mock_client
 
                 # create a new dataset
-                dataset = factories.Dataset(title='test', author='Author, Test')
+                dataset = factories.Dataset(
+                    owner_org=factories.Organization()['id'],
+                    title='test',
+                    author='Author, Test',
+                )
 
                 # reset our mock
                 mock_client.reset()
@@ -74,7 +78,7 @@ class TestDOIPlugin:
             mock_client_class.return_value = mock_client
 
             # create a new dataset
-            dataset = factories.Dataset()
+            dataset = factories.Dataset(owner_org=factories.Organization()['id'])
 
         doi = DOIQuery.read_package(dataset['id'], create_if_none=False)
         package = call_action('package_show', id=dataset['id'])

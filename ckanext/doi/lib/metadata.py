@@ -8,7 +8,7 @@ import logging
 import uuid
 from datetime import datetime
 from typing import Any
-from xml.etree.ElementTree import Element,tostring
+from xml.etree.ElementTree import Element, tostring
 
 from ckan.lib.helpers import lang as ckan_lang
 from ckan.model import Package
@@ -19,10 +19,10 @@ from ckanext.doi.lib import xml_utils
 from ckanext.doi.lib.errors import DOIMetadataException
 from ckanext.doi.lib.helpers import (
     date_or_none,
+    get_doi_platform,
     get_site_url,
     package_get_year,
-    get_doi_platform
-    )
+)
 
 log = logging.getLogger(__name__)
 
@@ -72,10 +72,9 @@ def datacite_build_medatata_dict(pkg_dict):
     _add_required('titles', lambda: [{'title': pkg_dict.get('title')}])
 
     # PUBLISHER
-    _add_required('publisher', lambda: {
-                "name": toolkit.config.get('ckanext.doi.publisher')
-            }
-        )
+    _add_required(
+        'publisher', lambda: {'name': toolkit.config.get('ckanext.doi.publisher')}
+    )
 
     # PUBLICATION YEAR
     _add_required('publicationYear', lambda: package_get_year(pkg_dict))
@@ -302,7 +301,7 @@ def datacite_build_xml_dict(metadata_dict):
     xml_dict = {
         'creators': [],
         'titles': metadata_dict.get('titles', []),
-        'publisher':  metadata_dict.get('publisher', {}),
+        'publisher': metadata_dict.get('publisher', {}),
         'publicationYear': str(metadata_dict.get('publicationYear')),
         'types': {
             'resourceType': metadata_dict.get('resourceType'),
@@ -362,53 +361,57 @@ def datacite_build_xml_dict(metadata_dict):
 
 def crossref_build_medatata_dict(pkg_dict):
     metadata_dict: dict[str, Any] = {
-        "attrs": [
-            {"version": "5.3.1"},
-            {"xmlns": "http://www.crossref.org/schema/5.3.1"},
-            {"xmlns:jats": "http://www.ncbi.nlm.nih.gov/JATS1"}
+        'attrs': [
+            {'version': '5.3.1'},
+            {'xmlns': 'http://www.crossref.org/schema/5.3.1'},
+            {'xmlns:jats': 'http://www.ncbi.nlm.nih.gov/JATS1'},
         ],
-        "head" : {
-            "doi_batch_id": str(uuid.uuid4()),
-            "timestamp": round(datetime.utcnow().timestamp()),
-            "depositor": {
-                "depositor_name": toolkit.config.get("ckanext.doi.publisher", ""),
-                "email_address": toolkit.config.get("ckanext.doi.account_name", ""),
+        'head': {
+            'doi_batch_id': str(uuid.uuid4()),
+            'timestamp': round(datetime.utcnow().timestamp()),
+            'depositor': {
+                'depositor_name': toolkit.config.get('ckanext.doi.publisher', ''),
+                'email_address': toolkit.config.get('ckanext.doi.account_name', ''),
             },
-            "registrant": toolkit.config.get("ckanext.doi.account_name", ""),
+            'registrant': toolkit.config.get('ckanext.doi.account_name', ''),
         },
-        "body": {
-            "database": {
-                "database_metadata": {
-                    "attrs": [
-                        {"language": "en"},
+        'body': {
+            'database': {
+                'database_metadata': {
+                    'attrs': [
+                        {'language': 'en'},
                     ],
-                    "titles": {
-                        "title": "Dataset",
+                    'titles': {
+                        'title': 'Dataset',
                     },
-                    "institution": {
-                        "institution_name": toolkit.config.get("ckanext.doi.publisher", "")
+                    'institution': {
+                        'institution_name': toolkit.config.get(
+                            'ckanext.doi.publisher', ''
+                        )
                     },
                 },
-                "dataset": {
-                    "contributors": {
-                        "organization": {
-                            "attrs": [
-                                {"sequence": "first"},
-                                {"contributor_role": "author"}
+                'dataset': {
+                    'contributors': {
+                        'organization': {
+                            'attrs': [
+                                {'sequence': 'first'},
+                                {'contributor_role': 'author'},
                             ],
-                            'item_value': pkg_dict.get("organization", {}).get("title", "")
+                            'item_value': pkg_dict.get('organization', {}).get(
+                                'title', ''
+                            ),
                         },
                     },
-                    "titles": {
-                        "title": pkg_dict['title'],
+                    'titles': {
+                        'title': pkg_dict['title'],
                     },
-                    "doi_data": {
-                        "doi": pkg_dict.get("doi", ""),
-                        "resource": f"{get_site_url()}/dataset/{pkg_dict['id']}"
+                    'doi_data': {
+                        'doi': pkg_dict.get('doi', ''),
+                        'resource': f'{get_site_url()}/dataset/{pkg_dict["id"]}',
                     },
-                }
+                },
             }
-        }
+        },
     }
 
     for plugin in PluginImplementations(IDoi):
@@ -447,6 +450,6 @@ def crossref_build_xml_dict(metadata_dict):
 
         return elem
 
-    e= _dict_to_xml('doi_batch', metadata_dict)
+    e = _dict_to_xml('doi_batch', metadata_dict)
 
     return str(tostring(e, encoding='utf8', method='xml').decode('utf8'))

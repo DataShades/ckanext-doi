@@ -9,6 +9,21 @@ from ckan.model import Session
 from ckanext.doi.model.doi import DOI, doi_table
 
 
+def _save():
+    """
+    Persist pending changes.
+
+    When called from inside a CKAN action (e.g. an IPackageController hook), CKAN is
+    holding a SAVEPOINT and will commit the outer transaction itself; committing here
+    would close that savepoint out from under it (an error in SQLAlchemy 2), so we only
+    flush in that case.
+    """
+    if Session().in_nested_transaction():
+        Session.flush()
+    else:
+        Session.commit()
+
+
 class DOIQuery:
     # convenience properties
     m = DOI
@@ -28,7 +43,7 @@ class DOIQuery:
             identifier=identifier, package_id=package_id, published=published
         )
         Session.add(new_record)
-        Session.commit()
+        _save()
         return new_record
 
     @classmethod
@@ -39,7 +54,7 @@ class DOIQuery:
         :param identifier: the DOI string
         :returns: the record object
         """
-        return Session.query(DOI).get(identifier)
+        return Session.get(DOI, identifier)
 
     @classmethod
     def read_package(cls, package_id, create_if_none=False):
@@ -71,7 +86,7 @@ class DOIQuery:
         """
         update_dict = {k: v for k, v in kwargs.items() if k in cls.cols}
         Session.query(DOI).filter(DOI.identifier == identifier).update(update_dict)
-        Session.commit()
+        _save()
         return cls.read_doi(identifier)
 
     @classmethod
@@ -86,7 +101,7 @@ class DOIQuery:
         """
         update_dict = {k: v for k, v in kwargs.items() if k in cls.cols}
         Session.query(DOI).filter(DOI.package_id == package_id).update(update_dict)
-        Session.commit()
+        _save()
         return cls.read_package(package_id)
 
     @classmethod
@@ -100,7 +115,7 @@ class DOIQuery:
         to_delete = cls.read_doi(identifier)
         if to_delete is not None:
             Session.delete(to_delete)
-            Session.commit()
+            _save()
             return True
         else:
             return False
@@ -116,7 +131,7 @@ class DOIQuery:
         to_delete = cls.read_package(package_id)
         if to_delete is not None:
             Session.delete(to_delete)
-            Session.commit()
+            _save()
             return True
         else:
             return False
