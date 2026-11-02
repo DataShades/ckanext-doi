@@ -9,6 +9,7 @@ from logging import getLogger
 from typing import Any
 
 from ckan.plugins import SingletonPlugin, implements, interfaces, toolkit
+from datacite.errors import DataCiteError, HttpError
 
 from ckanext.doi import cli
 from ckanext.doi.lib.api import get_client
@@ -89,31 +90,39 @@ class DOIPlugin(SingletonPlugin, toolkit.DefaultDatasetForm):
 
             client = get_client()
 
-            if doi.published is None:
-                # metadata gets created before minting
-                client.set_metadata(doi.identifier, xml_dict)
-                client.mint_doi(doi.identifier, package_id)
-
-                try:
-                    toolkit.h.flash_success(
-                        f'{client.client_name} DataCite DOI created'
-                    )
-                except RuntimeError:
-                    # fix out of context issue while running cli commands
-                    pass
-            else:
-                same = client.check_for_update(doi.identifier, xml_dict)
-                if not same:
-                    # Not the same, so we want to update the metadata
+            # This hook runs before the dataset is committed, so a DOI failure must not
+            # escape or it rolls back the user's save. An unpublished DOI is retried on
+            # the next update.
+            try:
+                if doi.published is None:
+                    # metadata gets created before minting
                     client.set_metadata(doi.identifier, xml_dict)
+                    client.mint_doi(doi.identifier, package_id)
 
                     try:
                         toolkit.h.flash_success(
-                            f'{client.client_name} DOI metadata updated'
+                            f'{client.client_name} DataCite DOI created'
                         )
                     except RuntimeError:
                         # fix out of context issue while running cli commands
                         pass
+                else:
+                    same = client.check_for_update(doi.identifier, xml_dict)
+                    if not same:
+                        # Not the same, so we want to update the metadata
+                        client.set_metadata(doi.identifier, xml_dict)
+
+                        try:
+                            toolkit.h.flash_success(
+                                f'{client.client_name} DOI metadata updated'
+                            )
+                        except RuntimeError:
+                            # fix out of context issue while running cli commands
+                            pass
+            except (DataCiteError, HttpError):
+                log.exception(
+                    f'Cannot register DOI {doi.identifier} for package {package_id}'
+                )
 
         return pkg_dict
 
